@@ -1,0 +1,19 @@
+{
+    "manifest_version": 3,
+    "name": "HTML to Markdown Converter",
+    "version": "1.0",
+    "description": "Converts webpage HTML to markdown using Jina AI",
+    "permissions": ["activeTab", "scripting", "contextMenus", "sidePanel", "storage"],
+    "background": {
+        "service_worker": "background.js"
+    },
+    "side_panel": {
+        "default_path": "sidebar.html"
+    },
+    "options_page": "options.html",
+    "host_permissions": [
+        "https://public-file-server-production.up.railway.app/*",
+        "https://r.jina.ai/*",
+        "https://api.openai.com/*"
+    ]
+}

@@ -1,50 +1,62 @@
-# React + TypeScript + Vite
+# Chat with Markdown Page
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A powerful Chrome extension that transforms web pages into markdown format and enables AI-powered conversations about the content. Built with React, TypeScript, and Vite.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- 🔄 Smart webpage to markdown conversion
+- 💬 Interactive AI chat about page content
+- 📑 Side panel interface for easy access
+- 🎨 Clean and intuitive user interface
+- 💾 Local storage for conversation history
+- 🔒 Privacy-focused with secure API handling
 
-## Expanding the ESLint configuration
+## Installation
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+1. Clone this repository
+2. Install dependencies:
+   ```bash
+   npm install
+   ```
+3. Build the extension:
+   ```bash
+   npm run build
+   ```
+4. Load the extension in Chrome:
+   - Open Chrome and go to `chrome://extensions/`
+   - Enable "Developer mode"
+   - Click "Load unpacked"
+   - Select the `dist` directory from this project
 
-- Configure the top-level `parserOptions` property like this:
+## Usage
 
-```js
-export default tseslint.config({
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+1. Click the extension icon to open the side panel
+2. Navigate to any webpage you want to analyze
+3. The extension will automatically convert the page content to markdown
+4. Use the chat interface to ask questions or discuss the content
+5. Access conversation history and settings through the side panel
+
+## Development
+
+This project uses:
+- React 18+ for the UI
+- TypeScript for type safety
+- Vite for fast development and building
+- Chrome Extensions Manifest V3
+
+To start development:
+```bash
+npm run dev
 ```
 
-- Replace `tseslint.configs.recommended` to `tseslint.configs.recommendedTypeChecked` or `tseslint.configs.strictTypeChecked`
-- Optionally add `...tseslint.configs.stylisticTypeChecked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and update the config:
+## Contributing
 
-```js
-// eslint.config.js
-import react from 'eslint-plugin-react'
+Contributions are welcome! Please feel free to submit a Pull Request.
 
-export default tseslint.config({
-  // Set the react version
-  settings: { react: { version: '18.3' } },
-  plugins: {
-    // Add the react plugin
-    react,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended rules
-    ...react.configs.recommended.rules,
-    ...react.configs['jsx-runtime'].rules,
-  },
-})
-```
+## License
+
+MIT License - feel free to use this code for your own projects.
+
+## Credits
+
+Built with Jina AI for markdown conversion and content processing.

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import ReactMarkdown from 'react-markdown';
+import ReactMarkdown from "react-markdown";
 import "./Sidebar.css";
 
 interface Message {
@@ -18,10 +18,12 @@ export const Sidebar = () => {
   const [userInput, setUserInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [markdownContent, setMarkdownContent] = useState("");
-  const [isMarkdownSectionCollapsed, setIsMarkdownSectionCollapsed] = useState(false);
+  const [isMarkdownSectionCollapsed, setIsMarkdownSectionCollapsed] =
+    useState(false);
   const [isRawMarkdown, setIsRawMarkdown] = useState(false);
   const [hasValidSettings, setHasValidSettings] = useState(false);
   const [isConverting, setIsConverting] = useState(false);
+  const [partialMessage, setPartialMessage] = useState("");
   const messageContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -70,6 +72,7 @@ export const Sidebar = () => {
     addMessage(message, true);
     setUserInput("");
     setLoading(true);
+    setPartialMessage("");
 
     try {
       const settings = await new Promise<Settings>((resolve) => {
@@ -100,13 +103,46 @@ export const Sidebar = () => {
               content: message,
             },
           ],
+          stream: true,
         }),
       });
 
-      const data = await response.json();
-      if (data.choices && data.choices[0]) {
-        addMessage(data.choices[0].message.content, false);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
+
+      const reader = response.body?.getReader();
+      if (!reader) {
+        throw new Error("No reader available");
+      }
+
+      const decoder = new TextDecoder();
+      let currentMessage = "";
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        const chunk = decoder.decode(value);
+        const lines = chunk.split("\n");
+
+        for (const line of lines) {
+          if (line.startsWith("data: ") && line !== "data: [DONE]") {
+            try {
+              const data = JSON.parse(line.slice(6));
+              if (data.choices[0]?.delta?.content) {
+                currentMessage += data.choices[0].delta.content;
+                setPartialMessage(currentMessage);
+              }
+            } catch (error) {
+              console.error("Error parsing stream:", error);
+            }
+          }
+        }
+      }
+
+      addMessage(currentMessage, false);
+      setPartialMessage("");
     } catch (error) {
       addMessage("Error: Failed to get response from OpenAI", false);
       console.error("Error:", error);
@@ -206,11 +242,11 @@ export const Sidebar = () => {
           onClick={() => setIsMarkdownSectionCollapsed((prev) => !prev)}
         >
           <span>Markdown Content</span>
-          <button 
+          <button
             className="view-toggle"
             onClick={(e) => {
               e.stopPropagation();
-              setIsRawMarkdown(prev => !prev);
+              setIsRawMarkdown((prev) => !prev);
             }}
           >
             {isRawMarkdown ? "Show Rendered" : "Show Raw"}
@@ -238,10 +274,19 @@ export const Sidebar = () => {
               {msg.isUser ? (
                 msg.text
               ) : (
-                <ReactMarkdown>{msg.text}</ReactMarkdown>
+                <div className="markdown-assistant">
+                  <ReactMarkdown>{msg.text}</ReactMarkdown>
+                </div>
               )}
             </div>
           ))}
+          {partialMessage && (
+            <div className="message assistant">
+              <div className="markdown-assistant">
+                <ReactMarkdown>{partialMessage}</ReactMarkdown>
+              </div>
+            </div>
+          )}
         </div>
         <div className="inputContainer">
           <input
@@ -253,10 +298,7 @@ export const Sidebar = () => {
             placeholder="Ask about the content..."
             disabled={loading}
           />
-          <button 
-            onClick={handleSendMessage}
-            disabled={loading}
-          >
+          <button onClick={handleSendMessage} disabled={loading}>
             {loading ? "Sending..." : "Send"}
           </button>
         </div>

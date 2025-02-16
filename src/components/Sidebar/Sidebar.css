@@ -9,6 +9,15 @@ body {
   flex-direction: column;
 }
 
+button {
+  padding: 8px 16px;
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
 .main-container {
   flex: 1;
   display: flex;
@@ -66,8 +75,9 @@ body {
   overflow-y: auto;
   margin-bottom: 4px;
   border: 1px solid #ccc;
+  border-top: 0;
   padding: 8px;
-  border-radius: 4px;
+  border-radius: 0 0 4px 4px;
 }
 
 .collapsible {
@@ -76,6 +86,7 @@ body {
   padding: 8px;
   background-color: #f5f5f5;
   cursor: pointer;
+  border-radius: 4px;
 }
 
 .view-toggle {
@@ -132,8 +143,10 @@ body {
 }
 
 .message.assistant {
-  margin-right: auto;
-  background-color: #f5f5f5;
+  width: 90%;
+  max-width: 90%;
+  white-space: unset;
+  word-wrap: unset;
 }
 
 .inputContainer {

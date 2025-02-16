@@ -5,6 +5,7 @@ interface Settings {
   openaiKey: string;
   openaiBaseUrl: string;
   openaiModel: string;
+  jinaKey: string;
 }
 
 export const Options = () => {
@@ -12,16 +13,18 @@ export const Options = () => {
     openaiKey: '',
     openaiBaseUrl: '',
     openaiModel: 'gpt-3.5-turbo',
+    jinaKey: '',
   });
   const [status, setStatus] = useState<{ message: string; isError: boolean } | null>(null);
 
   useEffect(() => {
     // Load saved settings
-    chrome.storage.sync.get(['openaiKey', 'openaiBaseUrl', 'openaiModel'], (result) => {
+    chrome.storage.sync.get(['openaiKey', 'openaiBaseUrl', 'openaiModel', 'jinaKey'], (result) => {
       setSettings({
         openaiKey: result.openaiKey || '',
         openaiBaseUrl: result.openaiBaseUrl || '',
         openaiModel: result.openaiModel || 'gpt-3.5-turbo',
+        jinaKey: result.jinaKey || '',
       });
     });
   }, []);
@@ -44,6 +47,7 @@ export const Options = () => {
         openaiKey: settings.openaiKey,
         openaiBaseUrl: settings.openaiBaseUrl,
         openaiModel: settings.openaiModel,
+        jinaKey: settings.jinaKey,
       },
       () => {
         showStatus('Settings saved successfully!');
@@ -90,6 +94,16 @@ export const Options = () => {
           value={settings.openaiModel}
           onChange={handleChange}
           placeholder="gpt-3.5-turbo"
+        />
+      </div>
+      <div className="form-group">
+        <label htmlFor="jinaKey">Jina API Key:</label>
+        <input
+          type="password"
+          id="jinaKey"
+          value={settings.jinaKey}
+          onChange={handleChange}
+          placeholder="Enter your Jina API key"
         />
       </div>
       <button onClick={handleSave}>Save Settings</button>

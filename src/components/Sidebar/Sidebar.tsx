@@ -11,6 +11,7 @@ interface Settings {
   openaiKey?: string;
   openaiBaseUrl?: string;
   openaiModel?: string;
+  jinaKey?: string;
 }
 
 export const Sidebar = () => {
@@ -43,8 +44,8 @@ export const Sidebar = () => {
       chrome.storage &&
       chrome.storage.sync
     ) {
-      chrome.storage.sync.get(["openaiKey"], (result) => {
-        setHasValidSettings(!!result.openaiKey);
+      chrome.storage.sync.get(["openaiKey", "jinaKey"], (result) => {
+        setHasValidSettings(!!result.openaiKey && !!result.jinaKey);
       });
     }
   };
@@ -77,7 +78,7 @@ export const Sidebar = () => {
     try {
       const settings = await new Promise<Settings>((resolve) => {
         chrome.storage.sync.get(
-          ["openaiKey", "openaiBaseUrl", "openaiModel"],
+          ["openaiKey", "openaiBaseUrl", "openaiModel", "jinaKey"],
           resolve as (items: { [key: string]: any }) => void
         );
       });
@@ -189,12 +190,18 @@ export const Sidebar = () => {
         throw new Error("Failed to save HTML");
       }
 
+      const settings = await new Promise<Settings>((resolve) => {
+        chrome.storage.sync.get(
+          ["openaiKey", "openaiBaseUrl", "openaiModel", "jinaKey"],
+          resolve as (items: { [key: string]: any }) => void
+        );
+      });
+
       // Convert to markdown using Jina AI
       const fullUrl = `https://public-file-server-production.up.railway.app${saveData.url}`;
       const markdownResponse = await fetch(`https://r.jina.ai/${fullUrl}`, {
         headers: {
-          Authorization:
-            "Bearer jina_c4b5f4f16f9749079074cacc2786ffa7f43anXjRRj4lUa2tIiXq1Y2OOH6V",
+          Authorization: `Bearer ${settings.jinaKey}`,
         },
       });
 
@@ -218,7 +225,7 @@ export const Sidebar = () => {
     <div className="main-container">
       {!hasValidSettings && (
         <div id="settingsPrompt">
-          Please set your OpenAI API key in the
+          Please set your OpenAI API key and Jina API key in the
           <button onClick={openSettings}>settings</button>
         </div>
       )}

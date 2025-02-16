@@ -190,3 +190,34 @@ button {
   margin-bottom: 8px;
   color: #666;
 }
+
+.thinking-box {
+  background-color: #f5f5f5;
+  border-radius: 8px;
+  margin-bottom: 10px;
+  overflow: hidden;
+}
+
+.thinking-header {
+  background-color: #e0e0e0;
+  padding: 8px 12px;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  user-select: none;
+}
+
+.thinking-header:hover {
+  background-color: #d0d0d0;
+}
+
+.thinking-content {
+  padding: 12px;
+  border-top: 1px solid #ddd;
+}
+
+.toggle-icon {
+  font-size: 12px;
+  margin-left: 8px;
+}

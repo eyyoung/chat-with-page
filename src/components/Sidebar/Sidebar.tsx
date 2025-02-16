@@ -5,6 +5,7 @@ import "./Sidebar.css";
 interface Message {
   text: string;
   isUser: boolean;
+  reasoning?: string;
 }
 
 interface Settings {
@@ -25,6 +26,8 @@ export const Sidebar = () => {
   const [hasValidSettings, setHasValidSettings] = useState(false);
   const [isConverting, setIsConverting] = useState(false);
   const [partialMessage, setPartialMessage] = useState("");
+  const [partialReasoning, setPartialReasoning] = useState("");
+  const [reasoningCollapsed, setReasoningCollapsed] = useState<{[key: number]: boolean}>({});
   const messageContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -58,8 +61,8 @@ export const Sidebar = () => {
     }
   };
 
-  const addMessage = (text: string, isUser: boolean) => {
-    setMessages((prev) => [...prev, { text, isUser }]);
+  const addMessage = (text: string, isUser: boolean, reasoning?: string) => {
+    setMessages((prev) => [...prev, { text, isUser, reasoning }]);
   };
 
   const handleSendMessage = async () => {
@@ -74,6 +77,7 @@ export const Sidebar = () => {
     setUserInput("");
     setLoading(true);
     setPartialMessage("");
+    setPartialReasoning("");
 
     try {
       const settings = await new Promise<Settings>((resolve) => {
@@ -119,6 +123,7 @@ export const Sidebar = () => {
 
       const decoder = new TextDecoder();
       let currentMessage = "";
+      let currentReasoning = "";
 
       while (true) {
         const { done, value } = await reader.read();
@@ -135,6 +140,10 @@ export const Sidebar = () => {
                 currentMessage += data.choices[0].delta.content;
                 setPartialMessage(currentMessage);
               }
+              if (data.choices[0]?.delta?.reasoning_content) {
+                currentReasoning += data.choices[0].delta.reasoning_content;
+                setPartialReasoning(currentReasoning);
+              }
             } catch (error) {
               console.error("Error parsing stream:", error);
             }
@@ -142,8 +151,9 @@ export const Sidebar = () => {
         }
       }
 
-      addMessage(currentMessage, false);
+      addMessage(currentMessage, false, currentReasoning);
       setPartialMessage("");
+      setPartialReasoning("");
     } catch (error) {
       addMessage("Error: Failed to get response from OpenAI", false);
       console.error("Error:", error);
@@ -281,17 +291,53 @@ export const Sidebar = () => {
               {msg.isUser ? (
                 msg.text
               ) : (
-                <div className="markdown-assistant">
-                  <ReactMarkdown>{msg.text}</ReactMarkdown>
-                </div>
+                <>
+                  {msg.reasoning && (
+                    <div className="thinking-box">
+                      <div 
+                        className="thinking-header" 
+                        onClick={() => setReasoningCollapsed(prev => ({
+                          ...prev,
+                          [index]: !prev[index]
+                        }))}
+                      >
+                        <span>Thinking{reasoningCollapsed[index] ? '...' : ' Complete'}</span>
+                        <span className="toggle-icon">
+                          {reasoningCollapsed[index] ? '▼' : '▲'}
+                        </span>
+                      </div>
+                      {!reasoningCollapsed[index] && (
+                        <div className="thinking-content">
+                          <ReactMarkdown>{msg.reasoning}</ReactMarkdown>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  <div className="markdown-assistant">
+                    <ReactMarkdown>{msg.text}</ReactMarkdown>
+                  </div>
+                </>
               )}
             </div>
           ))}
-          {partialMessage && (
+          {(partialMessage || partialReasoning) && (
             <div className="message assistant">
-              <div className="markdown-assistant">
-                <ReactMarkdown>{partialMessage}</ReactMarkdown>
-              </div>
+              {partialReasoning && (
+                <div className="thinking-box">
+                  <div className="thinking-header">
+                    <span>Thinking...</span>
+                    <span className="toggle-icon">▼</span>
+                  </div>
+                  <div className="thinking-content">
+                    <ReactMarkdown>{partialReasoning}</ReactMarkdown>
+                  </div>
+                </div>
+              )}
+              {partialMessage && (
+                <div className="markdown-assistant">
+                  <ReactMarkdown>{partialMessage}</ReactMarkdown>
+                </div>
+              )}
             </div>
           )}
         </div>

@@ -36,10 +36,41 @@ export const Options = () => {
     }, 3000);
   };
 
-  const handleSave = () => {
+  const requestHostPermission = async (url: string): Promise<boolean> => {
+    try {
+      // Convert the URL to a pattern that matches the entire domain
+      const urlObj = new URL(url);
+      const pattern = `${urlObj.protocol}//${urlObj.hostname}/*`;
+      
+      const granted = await chrome.permissions.request({
+        origins: [pattern]
+      });
+      
+      return granted;
+    } catch (error) {
+      console.error('Error requesting host permission:', error);
+      return false;
+    }
+  };
+
+  const handleSave = async () => {
     if (!settings.openaiKey.trim()) {
       showStatus('Please enter your OpenAI API key', true);
       return;
+    }
+
+    // If openaiBaseUrl is provided, request host permission
+    if (settings.openaiBaseUrl.trim()) {
+      try {
+        const granted = await requestHostPermission(settings.openaiBaseUrl);
+        if (!granted) {
+          showStatus('Host permission denied. Settings not saved.', true);
+          return;
+        }
+      } catch (error) {
+        showStatus('Invalid URL format', true);
+        return;
+      }
     }
 
     chrome.storage.sync.set(
@@ -85,6 +116,9 @@ export const Options = () => {
           onChange={handleChange}
           placeholder="https://api.openai.com/v1"
         />
+        <small className="help-text">
+          Note: Adding a custom base URL will require additional host permissions
+        </small>
       </div>
       <div className="form-group">
         <label htmlFor="openaiModel">Model Name:</label>

@@ -212,6 +212,7 @@ export const Sidebar = () => {
       const markdownResponse = await fetch(`https://r.jina.ai/${fullUrl}`, {
         headers: {
           Authorization: `Bearer ${settings.jinaKey}`,
+          "X-Respond-With": "readerlm-v2"
         },
       });
 
